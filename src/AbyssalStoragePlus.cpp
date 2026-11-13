@@ -242,6 +242,7 @@ bool AbyssalStoragePlusMgr::IsAutoVaultEnabled(uint32 accountId, AbyssalAcquireS
 
     switch (source)
     {
+        case AbyssalAcquireSource::Unknown:
         case AbyssalAcquireSource::Loot:
             return settings.autoVaultLoot;
         case AbyssalAcquireSource::Craft:
