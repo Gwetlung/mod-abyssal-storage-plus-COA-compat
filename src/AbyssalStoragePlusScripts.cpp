@@ -198,7 +198,6 @@ public:
         PLAYERHOOK_ON_PLAYER_QUEST_ACCEPT,
         PLAYERHOOK_ON_SPELL_CAST,
         PLAYERHOOK_ON_QUEST_REWARD_ITEM,
-        PLAYERHOOK_ON_AFTER_TAKE_ITEM_FROM_MAIL,
         PLAYERHOOK_ON_BEFORE_STORE_OR_EQUIP_NEW_ITEM,
         PLAYERHOOK_ON_CREATE_ITEM
     }) { }
@@ -362,37 +361,7 @@ public:
             }
         }
     }
-
-    void OnPlayerAfterTakeItemFromMail(Player* player, Item* item, uint32 count) override
-    {
-        if (!sAbyssalStoragePlusMgr->IsEnabled() || !player || !item)
-            return;
-
-        if (sAbyssalStoragePlusMgr->IsBotAccount(player))
-            return;
-
-        uint32 accountId = player->GetSession()->GetAccountId();
-        if (!sAbyssalStoragePlusMgr->IsAutoVaultEnabled(accountId, AbyssalAcquireSource::Mail))
-            return;
-
-        AbyssalPlayerData* data = GetAbyssalData(player);
-        if (!data || data->isMaterializing)
-            return;
-
-        if (data->materializedItems.count(item->GetEntry()))
-            return;
-
-        ItemTemplate const* itemTemplate = item->GetTemplate();
-        if (!sAbyssalStoragePlusMgr->ShouldAutoStore(player, itemTemplate))
-            return;
-
-        // Mail items never reach OnPlayerStoreNewItem, so queue them here
-        data->pendingDeposits.push_back({ item->GetEntry(), count, AbyssalAcquireSource::Mail });
-
-        // Mail prints no loot line, so notify the client directly
-        sAbyssalStoragePlusMgr->SendVaultNotification(player, item->GetEntry(), count);
-    }
-
+   
     void OnPlayerUpdate(Player* player, uint32 /*p_time*/) override
     {
         if (!sAbyssalStoragePlusMgr->IsEnabled() || !player)
